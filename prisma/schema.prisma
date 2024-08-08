@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model productos {
+  Alias                   String   @id @db.VarChar(255)
+  Numero_de_Parte         String?  @db.VarChar(255)
+  Detalle                 String?  @db.Text
+  Precio                  Decimal? @db.Decimal(10, 2)
+  Moneda                  String?  @db.VarChar(50)
+  Cotizacion              Decimal? @db.Decimal(10, 2)
+  Tasa_IVA                Decimal? @db.Decimal(5, 2)
+  Tasa_Impuestos_Internos Decimal? @db.Decimal(5, 2)
+  Stock                   Int?
+  Marca                   String?  @db.VarChar(255)
+  Categoria               String?  @db.VarChar(255)
+  DescripcionTest         String?  @db.Text
+}
