@@ -21,3 +21,14 @@ model productos {
   Categoria               String?  @db.VarChar(255)
   DescripcionTest         String?  @db.Text
 }
+
+
+model users {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  name        String?
+  password    String   
+  role        String   @default("CUSTOMER")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
