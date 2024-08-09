@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { SimpleArticle } from "../interfaces/article.interface";
-import { readAllArticles, readAllArticlesByPage, readArticleByAlias, saveArticle, updateArticleByAlias, deleteArticleByAlias } from "../services/articlesService";
+import { readAllArticles, readAllArticlesByPage, readArticleByAlias, saveArticle, updateArticleByAlias, deleteArticleByAlias, readAllArticlesByMarca } from "../services/articlesService";
 
 
 export async function getAllArticles(req: Request, res: Response): Promise<Response | undefined> {
@@ -17,7 +17,7 @@ export async function getAllArticles(req: Request, res: Response): Promise<Respo
             return res.status(200).json({
                 status: "success",
                 page: page,
-                articulos: articulos?.length == 0 ? "No existe la página" : articulos
+                articulos: articulos?.length === 0 ? "No existe la página" : articulos
             });
         } else {
             const articulosData = await readAllArticles();
@@ -27,7 +27,7 @@ export async function getAllArticles(req: Request, res: Response): Promise<Respo
             })
             return res.status(200).json({
                 status: "success",
-                articulos: articulos?.length == 0 ? "No se encontraron artículos en la DB" : articulos
+                articulos: articulos?.length === 0 ? "No se encontraron artículos en la DB" : articulos
             })
         }
     } catch (error: any) {
@@ -52,6 +52,29 @@ export async function getArticlesByAlias(req: Request, res: Response): Promise<R
         res.status(500).json({ error: error.message });
     }
 }
+
+export async function getAllArticlesByMarca(req: Request, res: Response): Promise<Response | undefined> {
+    try {
+        const { marca } = req.params;
+        const page = Number(req.query.page);
+        const limit: any = page ? 5: undefined;
+        const offset: any = page ? (page - 1) * limit : undefined;
+        const articulosData = await readAllArticlesByMarca(marca, limit, offset);
+        const articulos = articulosData?.map(articulo => articulo = {
+            ...articulo,
+            endpoint: `${req.baseUrl}/${articulo.Alias}`
+        })
+        return res.status(200).json({
+            status: "success",
+            marca: marca,
+            page: page || "All",
+            articulos: articulos?.length === 0 ? `No se encontraron artículos de la marca ${marca} en la DB` : articulos
+        });
+    }
+    catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+}
 export async function createOneArticle(req: Request, res: Response): Promise<Response | undefined> { //manejar mejor el error de alias ya existente (en service)
     try {
         const created = await saveArticle(req.body);
@@ -67,15 +90,14 @@ export async function createOneArticle(req: Request, res: Response): Promise<Res
 }
 export async function updateOneArticle(req: Request, res: Response): Promise<Response | undefined> {
     try {
-        const {alias} = req.params;
-        const articleToUpdate = await readArticleByAlias(alias); //logica al service???
-        if (!articleToUpdate) {
+        const { alias } = req.params;
+        const updated = await updateArticleByAlias(req.body, alias);
+        if (!updated) {
             return res.status(404).json({
                 status: "error",
                 message: "El alias ingresado no existe"
             })
         }
-        const updated = await updateArticleByAlias(req.body, alias);
         return res.status(201).json({
             status: "success",
             message: `El artículo con alias ${updated.Alias} se actualizó con éxito`,
@@ -88,15 +110,14 @@ export async function updateOneArticle(req: Request, res: Response): Promise<Res
 }
 export async function deleteOneArticle(req: Request, res: Response): Promise<Response | undefined> {
     try {
-        const {alias} = req.params;
-        const articleToDelete = await readArticleByAlias(alias); //logica al service???
-        if (!articleToDelete) {
+        const { alias } = req.params;
+        const deleted = await deleteArticleByAlias(alias);
+        if (!deleted) {
             return res.status(404).json({
                 status: "error",
                 message: "El alias ingresado no existe"
             })
         }
-        const deleted = await deleteArticleByAlias(alias);
         return res.status(201).json({
             status: "success",
             message: `El artículo con alias ${deleted.Alias} se eliminó con éxito`,
