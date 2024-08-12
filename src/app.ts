@@ -1,6 +1,4 @@
 import express, { Application, urlencoded } from "express";
-
-
 require('dotenv').config();
 //rutas
 import indexRouter from "./routes/index.routes"; //index de todas las rutas

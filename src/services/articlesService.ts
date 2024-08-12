@@ -3,9 +3,11 @@ import pool from "../database/config/connection";
 
 import Prisma from "../database/config/prismaConnection";
 import productos from "@prisma/client";
+
 import { RowDataPacket } from "mysql2"
 
 import { selectAllArticulos, selectAllArticulosByPage, selectArticleByAlias } from "../database/articulos.sql";
+import prismaConnection from "../database/config/prismaConnection";
 
 export async function readAllArticles(): Promise<SimpleArticle[] | undefined> {
     try {
