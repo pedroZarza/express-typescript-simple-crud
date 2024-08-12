@@ -14,9 +14,9 @@ router.get("/:alias", getArticlesByAlias);
 
 router.get("/marca/:marca", getAllArticlesByMarca);
 
-router.post("/", schemaValidator(articleSchemaPost), authentication, authorization, createOneArticle);
+router.post("/",authentication, authorization, schemaValidator(articleSchemaPost), createOneArticle);
 
-router.put("/:alias", schemaValidator(articleSchemaPut), authentication, authorization, updateOneArticle);
+router.put("/:alias",authentication, authorization, schemaValidator(articleSchemaPut), updateOneArticle);
 
 router.delete("/:alias", authentication, authorization, deleteOneArticle);
 

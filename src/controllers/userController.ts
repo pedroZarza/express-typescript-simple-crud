@@ -34,7 +34,7 @@ export async function login(req: Request, res: Response): Promise<Response | und
             })
         }
         if(compareSync(password, user.password)){
-            const secretKey = process.env.SECRETKEY_JWT || "clave_default";
+            const secretKey = String(process.env.SECRETKEY_JWT);
             const token = jwt.sign({role: user.role}, secretKey, {expiresIn: 60 * 30});
             return res.status(200).json({
                 status: "success",
