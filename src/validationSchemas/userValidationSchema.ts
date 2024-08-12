@@ -8,3 +8,9 @@ export const userSchemaPost = z.object({
     password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
     confirmPassword: string()
 }).strict().refine(data => data.password === data.confirmPassword, { message: "Las contraseñas no coinciden", path: ["confirmación de contraseña"]});
+
+export const userSchemaLogin = z.object ({
+    email: z.string().email().trim().min(1, "Email requerido"),
+    password: z.string()
+}).strict()
+

@@ -3,20 +3,21 @@ import { Router, Request, Response, application, request } from "express";
 import { getAllArticles, getArticlesByAlias, createOneArticle, updateOneArticle, deleteOneArticle, getAllArticlesByMarca } from "../controllers/articlesController";
 import { schemaValidator } from "../middlewares/validatorMiddleware";
 import { articleSchemaPost, articleSchemaPut } from "../validationSchemas/articleValidationSchema";
+import { authentication, authorization } from "../middlewares/authMiddleware";
 
 
 const router = Router();
 
-router.get("/", getAllArticles);
+router.get("/", authentication, authorization, getAllArticles);
 
 router.get("/:alias", getArticlesByAlias);
 
 router.get("/marca/:marca", getAllArticlesByMarca);
 
-router.post("/", schemaValidator(articleSchemaPost), createOneArticle);
+router.post("/", schemaValidator(articleSchemaPost), authentication, authorization, createOneArticle);
 
-router.put("/:alias", schemaValidator(articleSchemaPut), updateOneArticle);
+router.put("/:alias", schemaValidator(articleSchemaPut), authentication, authorization, updateOneArticle);
 
-router.delete("/:alias", deleteOneArticle);
+router.delete("/:alias", authentication, authorization, deleteOneArticle);
 
 export default router;
