@@ -3,9 +3,11 @@ import pool from "../database/config/connection";
 
 import Prisma from "../database/config/prismaConnection";
 import productos from "@prisma/client";
+
 import { RowDataPacket } from "mysql2"
 
 import { selectAllArticulos, selectAllArticulosByPage, selectArticleByAlias } from "../database/articulos.sql";
+import prismaConnection from "../database/config/prismaConnection";
 
 export async function readAllArticles(): Promise<SimpleArticle[] | undefined> {
     try {
@@ -25,6 +27,23 @@ export async function readAllArticlesByPage(limit?: number, offset?: number): Pr
         throw new Error("Error interno del servidor");
     }
 }
+
+export async function readAllArticlesByMarca(marca: string, limit?: number, offset?: number): Promise<productos.productos[] | SimpleArticle[] |  undefined> {
+    try {
+        const articulos = await Prisma.productos.findMany({
+            where: {
+                Marca: marca
+            },
+            skip: offset,
+            take: limit
+        })
+        return articulos;
+        
+    } catch (error) {
+        throw new Error("Error interno del servidor");
+    }
+}
+
 export async function readArticleByAlias(alias: string): Promise<SimpleArticle | undefined> {
     try {
         const articulo = await pool.query<SimpleArticle[]>(selectArticleByAlias, [alias]);
@@ -36,6 +55,8 @@ export async function readArticleByAlias(alias: string): Promise<SimpleArticle |
 }
 export async function saveArticle(data: SimpleArticle): Promise<productos.productos> { //check typo -- prisma generated types
     try {
+        const article = await readArticleByAlias(data.Alias);
+        if(article) throw new Error("Ya existe un articulo con el alias ingresado");
         const newArticle = {
             Alias: data.Alias,
             Numero_de_Parte: data.Numero_de_Parte,
@@ -47,19 +68,22 @@ export async function saveArticle(data: SimpleArticle): Promise<productos.produc
             Tasa_Impuestos_Internos: data.Tasa_Impuestos_Internos,
             Stock: data.Stock,
             Marca: data.Marca,
-            Categoria: data.Marca,
+            Categoria: data.Categoria,
             DescripcionTest: data.DescripcionTest
         };
         return await Prisma.productos.create({
             data: newArticle
         });
     } catch (error) {
-        throw new Error("Error al crear el artículo");
+        // throw new Error("Error al crear el artículo");
+        throw error;
     }
 
 }
-export async function updateArticleByAlias(data: SimpleArticle, alias: string): Promise<productos.productos> {
+export async function updateArticleByAlias(data: SimpleArticle, alias: string): Promise<productos.productos | null> {
     try {
+        const article = await readArticleByAlias(alias);
+        if(!article) return null;
         const updatedArticle = {
             Numero_de_Parte: data.Numero_de_Parte,
             Detalle: data.Detalle,
@@ -84,8 +108,10 @@ export async function updateArticleByAlias(data: SimpleArticle, alias: string): 
         throw new Error("Error al actualizar el artículo");
     }
 }
-export async function deleteArticleByAlias(alias: string): Promise<productos.productos> {
+export async function deleteArticleByAlias(alias: string): Promise<productos.productos | null> {
     try {
+        const article = await readArticleByAlias(alias);
+        if(!article) return null;
         return await Prisma.productos.delete({
             where: {
                 Alias: alias
