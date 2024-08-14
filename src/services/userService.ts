@@ -1,4 +1,4 @@
-import { ROLE, SimpleUser } from "../interfaces/user.interface";
+import {SimpleUser } from "../interfaces/user.interface";
 import Prisma from "../database/config/prismaConnection";
 import { users } from "@prisma/client";
 import { hash, hashSync } from 'bcryptjs';

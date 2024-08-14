@@ -1,8 +1,12 @@
-import { Response, Request, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
+import { Payload } from "../@types";
 import jwt, { JwtPayload } from "jsonwebtoken";
+
+
+
 require('dotenv').config();
 
-export async function authentication(req: Request, res: Response, next: NextFunction): Promise<Response | undefined | never> {
+export async function authentication(req: Request, res: Response, next: NextFunction): Promise<Response | undefined | never | any> {
     try {
         const rawToken = (req.headers["authorization"]);
         const token = rawToken?.split(" ");
@@ -22,7 +26,7 @@ export async function authentication(req: Request, res: Response, next: NextFunc
                     message: "No autenticado"
                 })
             }
-            req.decodedPayload = decoded;
+            req.payload = decoded as Payload;
             next();
         });
     } catch (error) {
@@ -32,15 +36,16 @@ export async function authentication(req: Request, res: Response, next: NextFunc
     }
 }
 
-export async function authorization(req: Request, res: Response, next: NextFunction): Promise<Response | undefined | never> {
+export async function authorization(req: Request, res: Response, next: NextFunction): Promise<Response | undefined | never | any> {
     try {
-        if (!req.decodedPayload) {
+        if (!req.payload) {
             return res.status(401).json({
                 status: "error",
                 message: "No token provided"
             })
+
         }
-        const decodedData = req.decodedPayload as JwtPayload;
+        const decodedData = req.payload as JwtPayload;
         const role = decodedData.role;
         if(role !== "ADMIN"){
             return res.status(403).json({

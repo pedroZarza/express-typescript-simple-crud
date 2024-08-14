@@ -28,6 +28,6 @@ export const articleSchemaPut = z.object({
     Marca: z.string().min(1).optional(),
     Categoria: z.string().optional(),
     DescripcionTest: z.string().nullable().optional(),
-})
+}).strict();
 
 
