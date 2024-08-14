@@ -10,9 +10,9 @@ const router = Router();
 
 router.get("/", authentication, authorization, getAllArticles);
 
-router.get("/:alias", getArticlesByAlias);
+router.get("/:alias", authentication, getArticlesByAlias);
 
-router.get("/marca/:marca", getAllArticlesByMarca);
+router.get("/marca/:marca", authentication, getAllArticlesByMarca);
 
 router.post("/",authentication, authorization, schemaValidator(articleSchemaPost), createOneArticle);
 
