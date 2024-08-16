@@ -2,11 +2,9 @@ import { Request, Response, NextFunction } from "express";
 import { Payload } from "../@types";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
-
-
 require('dotenv').config();
 
-export async function authentication(req: Request, res: Response, next: NextFunction): Promise<Response | undefined | never | any> {
+export async function authentication(req: Request, res: Response, next: NextFunction): Promise<Response | undefined | never> {
     try {
         const rawToken = (req.headers["authorization"]);
         const token = rawToken?.split(" ");
@@ -36,7 +34,7 @@ export async function authentication(req: Request, res: Response, next: NextFunc
     }
 }
 
-export async function authorization(req: Request, res: Response, next: NextFunction): Promise<Response | undefined | never | any> {
+export async function authorization(req: Request, res: Response, next: NextFunction): Promise<Response | undefined | never> {
     try {
         if (!req.payload) {
             return res.status(401).json({
