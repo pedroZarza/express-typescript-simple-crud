@@ -9,7 +9,7 @@ export const schemaValidator = (schema: z.AnyZodObject | z.ZodEffects<z.AnyZodOb
         if (!validationResult.success) {
             const errors = validationResult.error.issues;
              //.error.formErrors.fieldErrors;
-            return res.status(500).json({ errors });
+            return res.status(400).json({ errors });
         }
         next()
     } catch (error: any) {
