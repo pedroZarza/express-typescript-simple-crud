@@ -21,7 +21,7 @@ export async function authentication(req: Request, res: Response, next: NextFunc
             if (err) {
                 return res.status(401).json({
                     status: "error",
-                    message: "No autenticado"
+                    message: "Error de autentificación, token inválido"
                 })
             }
             req.payload = decoded as Payload;

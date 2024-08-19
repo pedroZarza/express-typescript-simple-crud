@@ -22,7 +22,7 @@ export async function refreshToken(req: Request, res: Response): Promise<Respons
                 })
             }
             const existInBlacklist = await Redis.checkInvalidToken(decoded.invalidTokenId);
-            console.log(existInBlacklist)
+            // console.log(existInBlacklist)
             if(existInBlacklist === 1){
                 return res.status(401).json({
                     status: "error",
@@ -30,7 +30,7 @@ export async function refreshToken(req: Request, res: Response): Promise<Respons
                 })
             }
             const user = await readUserByEmail(decoded?.email);
-            const token = jwt.sign({ role: user?.role }, secretKey, { expiresIn: 60 });
+            const token = jwt.sign({ role: user?.role, email: user?.email }, secretKey, { expiresIn: 60*10 });
             return res.status(200).json({
                 status: "success",
                 message: "Nuevo token de acceso generado",
