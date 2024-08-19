@@ -48,7 +48,7 @@ class RedisConnection {
         const redis = await this.getClient();
         await redis.del("articulos");
     }
-    //refresh token blcklist
+    //refresh token blacklist
     async checkInvalidToken(invalidTokenId: string): Promise< number | undefined | never> {
         const redis = await this.getClient();
         return await redis.exists(invalidTokenId); 

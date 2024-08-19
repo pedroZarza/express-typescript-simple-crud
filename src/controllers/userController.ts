@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import { SimpleUser } from "../interfaces/user.interface";
-import { readUserByEmail, saveUser } from "../services/userService";
+import { readUserByEmail, saveUser, updateUserInfo, updateUserPassword } from "../services/userService";
 import { compareSync, hash, hashSync } from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { Redis } from "../database/config/redisConnection";
 
 
@@ -39,9 +39,9 @@ export async function login(req: Request, res: Response): Promise<Response | und
         }
         if (compareSync(password, user.password)) {
             const secretKey = String(process.env.SECRETKEY_JWT);
-            const token = jwt.sign({ role: user.role }, secretKey, { expiresIn: 60 });
-            const refreshToken = jwt.sign({ email: user.email, invalidTokenId: uuidv4()}, secretKey, { expiresIn: "30d" });
-            console.log(refreshToken)
+            const token = jwt.sign({ role: user.role, email: user.email }, secretKey, { expiresIn: 60 * 10 });
+            const refreshToken = jwt.sign({ email: user.email, invalidTokenId: uuidv4() }, secretKey, { expiresIn: "30d" });
+            // console.log(refreshToken) para obtener token y poder comprobar la blacklist
             res.cookie("refreshToken", refreshToken, { maxAge: (3600000 * 24) * 30, signed: false });  //(3600000*24)*30
             return res.status(200).json({
                 status: "success",
@@ -62,7 +62,7 @@ export async function login(req: Request, res: Response): Promise<Response | und
 export async function logout(req: Request, res: Response): Promise<Response | undefined> {
     try {
         const refreshToken: string = req.cookies["refreshToken"];
-        if(!refreshToken){
+        if (!refreshToken) {
             return res.status(409).json({
                 status: "error",
                 message: "No active refresh token"
@@ -77,7 +77,46 @@ export async function logout(req: Request, res: Response): Promise<Response | un
             message: "Token de sesión eliminado"
         })
     } catch (error: any) {
-        res.status(500).json({ error: "Error interno del servidor" });
+        res.status(500).json({ error: error.message });
     }
-
 }
+export async function updateUserInfoByEmail(req: Request, res: Response): Promise<Response | undefined> {
+    try {
+        const payload = req.payload as JwtPayload;
+        const updated = await updateUserInfo(req.body, payload.email);
+        if (!updated) {
+            return res.status(409).json({
+                status: "error",
+                message: "El usuario no existe"
+            })
+        }
+        return res.status(200).json({
+            status: "success",
+            message: `La información del usuario ${updated.email} se actualizó con éxito`,
+        })
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+}
+export async function changePassword(req: Request, res: Response): Promise<Response | undefined> {
+    try {
+        const {previousPassword, newPassword} = req.body;
+        const payload = req.payload as JwtPayload;
+        const user = await readUserByEmail(payload.email) as SimpleUser;
+        const previousPassCheck = compareSync(previousPassword, user.password);
+        if(!previousPassCheck){
+            return res.status(403).json({
+                status: "error",
+                message: "La contraseña anterior es incorrecta",
+            })
+        }
+        const updated = await updateUserPassword(newPassword, payload.email);
+        return res.status(200).json({
+            status: "success",
+            message: `La contraseña del usuario ${updated.email} se actualizó con éxito`,
+        })
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
