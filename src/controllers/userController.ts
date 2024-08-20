@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { SimpleUser } from "../interfaces/user.interface";
-import { readUserByEmail, saveUser, updateUserInfo, updateUserPassword } from "../services/userService";
+import { deleteUser, readUserByEmail, saveUser, updateUserInfo, updateUserPassword } from "../services/userService";
 import { compareSync, hash, hashSync } from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import jwt, { JwtPayload } from "jsonwebtoken";
@@ -39,10 +39,10 @@ export async function login(req: Request, res: Response): Promise<Response | und
         }
         if (compareSync(password, user.password)) {
             const secretKey = String(process.env.SECRETKEY_JWT);
-            const token = jwt.sign({ role: user.role, email: user.email }, secretKey, { expiresIn: 60 * 10 });
-            const refreshToken = jwt.sign({ email: user.email, invalidTokenId: uuidv4() }, secretKey, { expiresIn: "30d" });
+            const token = jwt.sign({ role: user.role, email: user.email, invalidTokenId: uuidv4()}, secretKey, { expiresIn: 60 * 15 });
+            const refreshToken = jwt.sign({ email: user.email, invalidTokenId: uuidv4()}, secretKey, { expiresIn: "30d" });
             // console.log(refreshToken) para obtener token y poder comprobar la blacklist
-            res.cookie("refreshToken", refreshToken, { maxAge: (3600000 * 24) * 30, signed: false });  //(3600000*24)*30
+            res.cookie("refreshToken", refreshToken, { maxAge: (3600000 * 24) * 30, signed: true, httpOnly: true });  //(3600000*24)*30
             return res.status(200).json({
                 status: "success",
                 message: "Usuario autenticado",
@@ -61,7 +61,7 @@ export async function login(req: Request, res: Response): Promise<Response | und
 }
 export async function logout(req: Request, res: Response): Promise<Response | undefined> {
     try {
-        const refreshToken: string = req.cookies["refreshToken"];
+        const refreshToken: string = req.signedCookies["refreshToken"];
         if (!refreshToken) {
             return res.status(409).json({
                 status: "error",
@@ -69,8 +69,8 @@ export async function logout(req: Request, res: Response): Promise<Response | un
             })
         }
         const secretKey = String(process.env.SECRETKEY_JWT);
-        const tokenPayload: any = jwt.verify(refreshToken, secretKey);
-        await Redis.writeInvalidToken(refreshToken, tokenPayload.invalidTokenId);
+        const refreshPayload: any = jwt.verify(refreshToken, secretKey);
+        await Redis.writeInvalidToken(refreshToken, refreshPayload.invalidTokenId);
         res.clearCookie("refreshToken");
         return res.status(200).json({
             status: "success",
@@ -100,11 +100,11 @@ export async function updateUserInfoByEmail(req: Request, res: Response): Promis
 }
 export async function changePassword(req: Request, res: Response): Promise<Response | undefined> {
     try {
-        const {previousPassword, newPassword} = req.body;
+        const { previousPassword, newPassword } = req.body;
         const payload = req.payload as JwtPayload;
         const user = await readUserByEmail(payload.email) as SimpleUser;
         const previousPassCheck = compareSync(previousPassword, user.password);
-        if(!previousPassCheck){
+        if (!previousPassCheck) {
             return res.status(403).json({
                 status: "error",
                 message: "La contraseña anterior es incorrecta",
@@ -119,4 +119,30 @@ export async function changePassword(req: Request, res: Response): Promise<Respo
         res.status(500).json({ error: error.message });
     }
 }
-
+export async function deleteAccount(req: Request, res: Response): Promise<Response | undefined> {
+    try {
+        const { password } = req.body;
+        const payload = req.payload as JwtPayload;
+        const user = await readUserByEmail(payload.email) as SimpleUser;
+        const checkPass = compareSync(password, user.password);
+        if(!checkPass){
+            return res.status(403).json({
+                status: "error",
+                message: "Contraseña incorrecta",
+            })
+        }
+        const refreshToken: string = req.signedCookies["refreshToken"];
+        const secretKey = String(process.env.SECRETKEY_JWT);
+        const tokenPayload: any = jwt.verify(refreshToken, secretKey);
+        await Redis.writeInvalidToken(refreshToken, tokenPayload.invalidTokenId);
+        res.clearCookie("refreshToken");
+        await deleteUser(payload.email);
+        return res.status(200).json({
+            status: "success",
+            message: "Cuenta eliminada"
+        })
+    } catch (error: any) {
+        console.log(error)
+        res.status(500).json({ error: error.message });
+    }
+}

@@ -2,11 +2,13 @@ import { Request, Response } from "express";
 import jwt, { JsonWebTokenError, JwtPayload } from "jsonwebtoken";
 import { readUserByEmail } from "../services/userService";
 import { Redis } from "../database/config/redisConnection";
+import { v4 as uuidv4 } from 'uuid';
+
 require('dotenv').config();
 
 export async function refreshToken(req: Request, res: Response): Promise<Response | undefined> {
     try {
-        const refreshToken: string = req.cookies["refreshToken"];
+        const refreshToken: string = req.signedCookies["refreshToken"];
         if (!refreshToken) {
             return res.status(401).json({
                 status: "error",
@@ -30,7 +32,7 @@ export async function refreshToken(req: Request, res: Response): Promise<Respons
                 })
             }
             const user = await readUserByEmail(decoded?.email);
-            const token = jwt.sign({ role: user?.role, email: user?.email }, secretKey, { expiresIn: 60*10 });
+            const token = jwt.sign({ role: user?.role, email: user?.email, invalidTokenId: uuidv4() }, secretKey, { expiresIn: 60*15 });
             return res.status(200).json({
                 status: "success",
                 message: "Nuevo token de acceso generado",
@@ -44,5 +46,4 @@ export async function refreshToken(req: Request, res: Response): Promise<Respons
             error: "Error interno del servidor"
         })
     }
-
 }

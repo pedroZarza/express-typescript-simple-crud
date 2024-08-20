@@ -7,7 +7,7 @@ export type Payload = string | JwtPayload | undefined;
 declare global {
   namespace Express {
     interface Request {
-      payload?: Payload
+      payload?: Payload,
     }
   }
 }

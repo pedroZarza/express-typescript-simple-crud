@@ -6,7 +6,7 @@ import { hash, hashSync } from 'bcryptjs';
 
 export async function readUserByEmail(email: string) {
     try {
-        const user = await Prisma.users.findUnique({ where: { email: email } });
+        const user = await Prisma.users.findUnique({ where: { email: email, deletedAt: null } });
         return user;
     } catch (error) {
         throw new Error("Error interno del servidor");
@@ -61,5 +61,19 @@ export async function updateUserPassword(newPassword: string , email: string): P
         })
     } catch (error) {
         throw new Error("Error al intentar cambiar la contraseña del usuario");
+    }
+}
+export async function deleteUser(email: string): Promise<users> {
+    try {
+        return await Prisma.users.update({
+            data: {
+                deletedAt: new Date()
+            },
+            where: {
+                email: email
+            }
+        })
+    } catch (error) {
+        throw new Error("Error al intentar eliminar la cuenta");
     }
 }
