@@ -2,6 +2,7 @@ import express, { Application, urlencoded } from "express";
 require('dotenv').config();
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 //rutas
 import indexRouter from "./routes/index.routes"; //index de todas las rutas
 
@@ -22,7 +23,8 @@ export class App {
     GlobalMiddlewares(){
         this.app.use(urlencoded({extended: true}));
         this.app.use(express.json());   
-        this.app.use(morgan("tiny"));     
+        this.app.use(morgan("tiny"));    
+        this.app.use(cors()) 
         this.app.use(cookieParser(process.env.SECRETKEY_COOKIE));
     }
     Routing() {

@@ -25,3 +25,6 @@ export const userChangePassSchema = z.object({
     confirmNewPassword: z.string().trim()
 }).strict().refine(data => data.newPassword === data.confirmNewPassword, { message: "Las contraseñas no coinciden", path: ["Confirmación de la nueva contraseña"]});
 
+export const userDeleteAccount = z.object({
+    password: z.string().trim()
+}).strict();

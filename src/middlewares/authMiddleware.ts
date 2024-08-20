@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Payload } from "../@types";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { Redis } from "../database/config/redisConnection";
 
 require('dotenv').config();
 
@@ -8,20 +9,26 @@ export async function authentication(req: Request, res: Response, next: NextFunc
     try {
         const rawToken = (req.headers["authorization"]);
         const token = rawToken?.split(" ");
-       
         if (!token) {
             return res.status(401).json({
                 status: "error",
                 message: "No token provided"
             })
-        }
-    
+        }    
         const secretKey = String(process.env.SECRETKEY_JWT) ;
-        jwt.verify(token[1], secretKey, (err, decoded) => {
+        jwt.verify(token[1], secretKey, async (err, decoded: any) => {
             if (err) {
                 return res.status(401).json({
                     status: "error",
-                    message: "Error de autentificación, token inválido"
+                    message: "No autentificado / token invalido"
+                })
+            }
+            const existInBlacklist = await Redis.checkInvalidToken(decoded.invalidTokenId); //para las rutas que revocan el token de acceso actual, tales como logout o eliminar cuenta.
+            // console.log(existInBlacklist)
+            if(existInBlacklist === 1){
+                return res.status(401).json({
+                    status: "error",
+                    message: "Expired access token"
                 })
             }
             req.payload = decoded as Payload;

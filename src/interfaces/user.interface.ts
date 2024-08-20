@@ -10,5 +10,6 @@ export interface SimpleUser {
     password: string,
     role?: ROLE,
     createdAt?: Date,
-    updatedAt?: Date
+    updatedAt?: Date,
+    deletedAt?: Date
 }
