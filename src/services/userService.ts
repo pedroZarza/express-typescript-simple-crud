@@ -15,7 +15,7 @@ export async function readUserByEmail(email: string) {
 
 export async function saveUser(data: SimpleUser): Promise<users | undefined | null> {
     try {
-        const user = await readUserByEmail(data.email);
+        const user = await Prisma.users.findUnique({ where: { email: data.email}});
         if (user) return null;
         const newUser = {
             email: data.email,

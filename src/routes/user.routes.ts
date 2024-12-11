@@ -16,7 +16,7 @@ router.post("/logout", authentication, revokeAccessToken, logout);
 
 router.post("/refresh-token", refreshToken);
 
-router.put("/", authentication, schemaValidator(userSchemaPut), updateUserInfoByEmail);
+router.put("/", authentication, schemaValidator(userSchemaPut), revokeAccessToken, updateUserInfoByEmail);
 
 router.put("/change-password", authentication, schemaValidator(userChangePassSchema), changePassword);
 
