@@ -1,12 +1,12 @@
-class HttpResponse {
-    public static readonly  status: string;
+// class HttpResponse {
+//     public static readonly  status: string;
     
-    constructor(public status: string){
-        this.status = status
-    }
-}
+//     constructor(public status: string){
+//         this.status = status
+//     }
+// }
 
-const rta = new HttpResponse("success");
+// const rta = new HttpResponse("success");
 
 
 

@@ -5,9 +5,6 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 //rutas
 import indexRouter from "./routes/index.routes"; //index de todas las rutas
-
-
-
 //middlewares
 import notFound from "./middlewares/notFound404";
 export class App {

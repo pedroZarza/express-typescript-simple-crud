@@ -14,13 +14,13 @@ export async function createOneUser(req: Request, res: Response): Promise<Respon
         const created = await saveUser(req.body);
         if (!created) {
             return res.status(409).json({
-                status: "error",
-                message: "El email ya está registrado"
+                status: "Error",
+                error: "El email ingresado ya está registrado"
             })
         }
         return res.status(201).json({
-            status: "success",
-            message: "El usuario ha sido registrado con éxito"
+            status: "Success",
+            error: "El usuario ha sido registrado con éxito"
         });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
