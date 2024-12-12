@@ -21,6 +21,7 @@ Esta es una API RESTful desarrollada en Node.js con TypeScript.
 - JWT (JSON Web Tokens)
 - Redis
 - Prisma (ORM)
+- MySql2
 - Zod
 - bcryptjs
 - dotenv
