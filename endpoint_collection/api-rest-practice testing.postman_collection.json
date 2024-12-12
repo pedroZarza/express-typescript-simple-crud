@@ -1,0 +1,503 @@
+{
+	"info": {
+		"_postman_id": "9870c02f-4a35-4ebc-9522-012c16811ed3",
+		"name": "api-rest-practice testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "37386452"
+	},
+	"item": [
+		{
+			"name": "/users/create",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"eldiego@yahoo.com\",\r\n    \"name\": \"el diegote\",\r\n    \"role\": \"ADMIN\",\r\n    \"password\": \"eldiego123\",\r\n    \"confirmPassword\": \"eldiego123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3030/users/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/users/login",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"eldiego@yahoo.com\",\r\n    // \"name\": \"el diegote\",\r\n    // \"role\": \"ADMIN\",\r\n    \"password\": \"eldiego123\"\r\n    // \"confirmPassword\": \"eldiego123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3030/users/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"users",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/users/logout",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3030/users/logout",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"users",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "users/refresh-token",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3030/users/refresh-token",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"users",
+						"refresh-token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/users/update-info",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiQ1VTVE9NRVIiLCJlbWFpbCI6ImVsZGllZ29AeWFob28uY29tIiwiaW52YWxpZFRva2VuSWQiOiI0MjEzNGVjNS05MDBmLTQxMzEtYWUzOC0wMGM5MTlhZDk5MzAiLCJpYXQiOjE3MjQxNzg4NjYsImV4cCI6MTcyNDE3OTc2Nn0.mT-OTGNhRJpxP6wyAixO1OAMYNHt-SVOHa_Y65_CDSo",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"role\": \"ADMIN\",\r\n    \"name\": \"diegote\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3030/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/users/change-password",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"juan123@gmail.com\",\r\n    \"name\": \"juan\",\r\n    \"password\": \"juan1234\",\r\n    \"confirmPassword\": \"juan1234\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3030/users/change-password",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"users",
+						"change-password"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "users/delete",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiQURNSU4iLCJlbWFpbCI6ImpvcmdpdG8xMjNAZ21haWwuY29tIiwiaW52YWxpZFRva2VuSWQiOiJiYTE3ZGZmOC1iYmY0LTQ0NWEtYWQxZC0yMTNmZjE1MGRjZWQiLCJpYXQiOjE3MjQxNzA3NzMsImV4cCI6MTcyNDE3MDgzM30.okYclzut5Jy4y7N7B_jRqy684JXFLWG-Ko4yNk1F3YI",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"password\": \"jorgito123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3030/users/delete-account",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"users",
+						"delete-account"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/articulos",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiQURNSU4iLCJlbWFpbCI6ImVsZGllZ29AeWFob28uY29tIiwiaW52YWxpZFRva2VuSWQiOiJkNzhhNWMxMy0zZDRkLTRmODAtOWQxNy0yZTcyZmUyM2NlOTUiLCJpYXQiOjE3MjQxNzg4OTQsImV4cCI6MTcyNDE3OTc5NH0.Z8g7eDyWCbs2FG03oNKz6XCPKP9hyE-s77INPOZWyqA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3030/articulos/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"articulos",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/articulos?page=3",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiQURNSU4iLCJlbWFpbCI6ImVsZGllZ29AeWFob28uY29tIiwiaW52YWxpZFRva2VuSWQiOiJkNzhhNWMxMy0zZDRkLTRmODAtOWQxNy0yZTcyZmUyM2NlOTUiLCJpYXQiOjE3MjQxNzg4OTQsImV4cCI6MTcyNDE3OTc5NH0.Z8g7eDyWCbs2FG03oNKz6XCPKP9hyE-s77INPOZWyqA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3030/articulos?page=3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"articulos"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "3"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/articulos/marca/:marca",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiQURNSU4iLCJlbWFpbCI6ImVsZGllZ29AeWFob28uY29tIiwiaW52YWxpZFRva2VuSWQiOiJkNzhhNWMxMy0zZDRkLTRmODAtOWQxNy0yZTcyZmUyM2NlOTUiLCJpYXQiOjE3MjQxNzg4OTQsImV4cCI6MTcyNDE3OTc5NH0.Z8g7eDyWCbs2FG03oNKz6XCPKP9hyE-s77INPOZWyqA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3030/articulos/marca/huawei?page=2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"articulos",
+						"marca",
+						"huawei"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/articulos/marca/:marca?page=3",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiQURNSU4iLCJlbWFpbCI6Imp1YW4xMjM0QGdtYWlsLmNvbSIsImludmFsaWRUb2tlbklkIjoiYTQyZThiZDAtNjkwMi00MzkwLWFlZjAtZTc0MTFiYzZlZTEzIiwiaWF0IjoxNzI0MTc1Nzg5LCJleHAiOjE3MjQxNzY2ODl9.jWPvyE6LKNvBlR57MoVJd8cRidyfyhRNQDovxYkHXqA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3030/articulos/:marca?page=3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"articulos",
+						":marca"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "3"
+						}
+					],
+					"variable": [
+						{
+							"key": "marca",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/articulos/:alias",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiQURNSU4iLCJlbWFpbCI6ImVsZGllZ29AeWFob28uY29tIiwiaW52YWxpZFRva2VuSWQiOiJkNzhhNWMxMy0zZDRkLTRmODAtOWQxNy0yZTcyZmUyM2NlOTUiLCJpYXQiOjE3MjQxNzg4OTQsImV4cCI6MTcyNDE3OTc5NH0.Z8g7eDyWCbs2FG03oNKz6XCPKP9hyE-s77INPOZWyqA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3030/articulos/04070006",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"articulos",
+						"04070006"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/articulos/create",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiQURNSU4iLCJlbWFpbCI6Imp1YW4xMjM0QGdtYWlsLmNvbSIsImludmFsaWRUb2tlbklkIjoiYTQyZThiZDAtNjkwMi00MzkwLWFlZjAtZTc0MTFiYzZlZTEzIiwiaWF0IjoxNzI0MTc1Nzg5LCJleHAiOjE3MjQxNzY2ODl9.jWPvyE6LKNvBlR57MoVJd8cRidyfyhRNQDovxYkHXqA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Alias\": \"bbbbbbbbbbbbbbbbbbbbb\",\r\n    \"Numero_de_Parte\": \"06190001\",\r\n    \"Detalle\": \"ICD OPS i5 D, que utiliza el procesador Intel® Core™ i5-10500, se ajusta a la especificación del sector de Intel® OPS-C.<br>Es compatible con almacenamiento SSD M.2 y memoria DDR4 de doble canal. Además, el ICD OPS i5 D utiliza la última gener|<br>ación de gráficos Intel® UHD 630 para proporcionar excelentes procesamiento de imágenes y admite dos salidas de vídeo 4K<br>2K independientes. Es adecuado para escenarios como la señalización digital educación y pizarras para conferencias.\",\r\n    \"Precio\": 946.20,\r\n    \"Moneda\": \"DOLARES\",\r\n    \"Cotizacion\": \"7.90\",\r\n    \"Tasa_IVA\": \"12.00\",\r\n    \"Tasa_Impuestos_Internos\": \"0.00\",\r\n    \"Stock\": 3,\r\n    \"Marca\": \"HUAWEI\",\r\n    \"Categoria\": \"POWER DISTRIBUTION\",\r\n    \"DescripcionTest\": null\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3030/articulos",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"articulos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/articulos/update",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Alias\": \"bbbbbbbbbbbbbbbbbbbbb\",\r\n    \"Numero_de_Parte\": \"06190001\",\r\n    \"Detalle\": \"ICD OPS i5 D, que utiliza el procesador Intel® Core™ i5-10500, se ajusta a la especificación del sector de Intel® OPS-C.<br>Es compatible con almacenamiento SSD M.2 y memoria DDR4 de doble canal. Además, el ICD OPS i5 D utiliza la última gener|<br>ación de gráficos Intel® UHD 630 para proporcionar excelentes procesamiento de imágenes y admite dos salidas de vídeo 4K<br>2K independientes. Es adecuado para escenarios como la señalización digital educación y pizarras para conferencias.\",\r\n    \"Precio\": 946.20,\r\n    \"Moneda\": \"DOLARES\",\r\n    \"Cotizacion\": \"7.90\",\r\n    \"Tasa_IVA\": \"12.00\",\r\n    \"Tasa_Impuestos_Internos\": \"0.00\",\r\n    \"Stock\": 3,\r\n    \"Marca\": \"HUAWEI\",\r\n    \"Categoria\": \"POWER DISTRIBUTION\",\r\n    \"DescripcionTest\": null\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3030/articulos/:alias",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"articulos",
+						":alias"
+					],
+					"variable": [
+						{
+							"key": "alias",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/articulos/delete",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3030/articulos/:alias",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3030",
+					"path": [
+						"articulos",
+						":alias"
+					],
+					"variable": [
+						{
+							"key": "alias",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
