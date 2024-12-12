@@ -29,7 +29,7 @@ Esta es una API RESTful desarrollada en Node.js con TypeScript.
 
 Puedes descargar la colección de Postman para probar los endpoints de la API desde el siguiente enlace:
 
-[Descargar colección de Postman](https://github.com/tu-usuario/tu-repositorio/raw/main/postman/coleccion-de-endpoints.json)
+[Descargar colección de Postman](https://github.com/pedroZarza/express-typescript-simple-api/blob/main/endpoint_collection/api-rest-practice%20testing.postman_collection.json)
 
 ### .env config
 
