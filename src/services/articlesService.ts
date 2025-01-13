@@ -1,6 +1,7 @@
 import { SimpleArticle } from "../interfaces/article.interface";
 import { articlesRepository } from "../repositories/articles.repository"
 import { ErrorFactory } from "../utils/HttpErrorResponses";
+import productos from "@prisma/client";
 
 export const articlesService = {
     readArticles: async function (page: number | undefined): Promise<SimpleArticle[] | undefined> {
@@ -50,7 +51,7 @@ export const articlesService = {
         }
     },
 
-    saveNewArticle: async function (articleData: SimpleArticle): Promise<any> {
+    saveNewArticle: async function (articleData: SimpleArticle): Promise<productos.productos> {
         try {
             const aliasExist = await articlesRepository.DBreadArticleByAlias(articleData.Alias);
             if(aliasExist) throw ErrorFactory.createError(409, "El alias ingresado ya existe en la base de datos");
@@ -60,7 +61,7 @@ export const articlesService = {
         }
     },
 
-    updateArticle: async function (articleData: SimpleArticle, alias: string): Promise<any> {
+    updateArticle: async function (articleData: SimpleArticle, alias: string): Promise<productos.productos> {
         try {
             const aliasExist = await articlesRepository.DBreadArticleByAlias(alias);
             if(!aliasExist) throw ErrorFactory.createError(404, "El alias ingresado no existe en la base de datos");
@@ -70,7 +71,7 @@ export const articlesService = {
         }
     },
 
-    deleteArticle: async function (alias: string): Promise<any> {
+    deleteArticle: async function (alias: string): Promise<productos.productos> {
         try {
             const aliasExist = await articlesRepository.DBreadArticleByAlias(alias);
             if(!aliasExist) throw ErrorFactory.createError(404, "El alias ingresado no existe en la base de datos");
