@@ -1,134 +1,85 @@
 import { SimpleArticle } from "../interfaces/article.interface";
-import pool from "../database/config/connection";
-import { RowDataPacket } from "mysql2"
-import Prisma from "../database/config/prismaConnection";
+import { articlesRepository } from "../repositories/articles.repository"
+import { ErrorFactory } from "../utils/HttpErrorResponses";
 import productos from "@prisma/client";
-import { Redis } from "../database/config/redisConnection";
 
-
-
-import { selectAllArticulos, selectAllArticulosByPage, selectArticleByAlias } from "../database/queries/articulos.sql";
-
-
-export async function readAllArticles(): Promise<SimpleArticle[] | undefined >{
-    try {
-        const redisArticles = await Redis.readRedisArticles();
-        if (!redisArticles) {
-            const articulos = await pool.query<SimpleArticle[]>(selectAllArticulos);
-            await Redis.writeRedisArticles(articulos[0]);
-            return articulos[0];
-            
+export const articlesService = {
+    readArticles: async function (page: number | undefined): Promise<SimpleArticle[] | undefined> {
+        try {
+            if (page) {
+                const limit: number = 5;
+                const offset: number = (page - 1) * limit;
+                const articulos = await articlesRepository.DBreadAllArticlesByPage(limit, offset);
+                return articulos;
+            } else {
+                const articulos = await articlesRepository.DBreadAllArticles();
+                return articulos;
+            }
+        } catch (error: any) {
+            throw ErrorFactory.createError(500);
         }
-        return redisArticles;
-    } catch (error) {
-        throw new Error("Error interno del servidor");
-    }
-}
-export async function readAllArticlesByPage(limit?: number, offset?: number): Promise<SimpleArticle[] | undefined> {
-    try {
-        const articulos = await pool.query<SimpleArticle[]>(selectAllArticulosByPage, [limit, offset]);
-        return articulos[0];
+    },
 
-    } catch (error) {
-        throw new Error("Error interno del servidor");
-    }
-}
-
-export async function readAllArticlesByMarca(marca: string, limit?: number, offset?: number): Promise<productos.productos[] | SimpleArticle[] | undefined> {
-    try {
-        const articulos = await Prisma.productos.findMany({
-            where: {
-                Marca: marca
-            },
-            skip: offset,
-            take: limit
-        })
-        return articulos;
-
-    } catch (error) {
-        throw new Error("Error interno del servidor");
-    }
-}
-
-export async function readArticleByAlias(alias: string): Promise<SimpleArticle | undefined> {
-    try {
-        const articulo = await pool.query<SimpleArticle[]>(selectArticleByAlias, [alias]);
-        return articulo[0][0];//ver si hay otra manera de que la query te de un objeto directamente.
-
-    } catch (error) {
-        throw new Error("Error interno del servidor");
-    }
-}
-export async function saveArticle(data: SimpleArticle): Promise<productos.productos> { //check typo -- prisma generated types
-    try {
-        const article = await readArticleByAlias(data.Alias);
-        if (article) throw new Error("Ya existe un articulo con el alias ingresado");
-        const newArticle = {
-            Alias: data.Alias,
-            Numero_de_Parte: data.Numero_de_Parte,
-            Detalle: data.Detalle,
-            Precio: data.Precio,
-            Moneda: data.Moneda,
-            Cotizacion: data.Cotizacion,
-            Tasa_IVA: data.Tasa_IVA,
-            Tasa_Impuestos_Internos: data.Tasa_Impuestos_Internos,
-            Stock: data.Stock,
-            Marca: data.Marca,
-            Categoria: data.Categoria,
-            DescripcionTest: data.DescripcionTest
-        };   
-        await Redis.deleteRedisArticles();
-        return await Prisma.productos.create({
-            data: newArticle
-        });
-     
-    } catch (error) {
-        // throw new Error("Error al crear el artículo");
-        throw error;
-    }
-
-}
-export async function updateArticleByAlias(data: SimpleArticle, alias: string): Promise<productos.productos | null> {
-    try {
-        const article = await readArticleByAlias(alias);
-        if (!article) return null;
-        const updatedArticle = {
-            Numero_de_Parte: data.Numero_de_Parte,
-            Detalle: data.Detalle,
-            Precio: data.Precio,
-            Moneda: data.Moneda,
-            Cotizacion: data.Cotizacion,
-            Tasa_IVA: data.Tasa_IVA,
-            Tasa_Impuestos_Internos: data.Tasa_Impuestos_Internos,
-            Stock: data.Stock,
-            Marca: data.Marca,
-            Categoria: data.Marca,
-            DescripcionTest: data.DescripcionTest
-        };
-        await Redis.deleteRedisArticles();
-        return await Prisma.productos.update({
-            data: updatedArticle,
-            where: {
-                Alias: alias
+    readArticleByAlias: async function (alias: string): Promise<SimpleArticle> {
+        try {
+            const article = await articlesRepository.DBreadArticleByAlias(alias);
+            if (!article) {
+                throw ErrorFactory.createError(404, "El alias ingresado no existe");
             }
-        })
+            return article;
+        } catch (error) {
+            throw error
+        }
+    },
 
-    } catch (error) {
-        throw new Error("Error al actualizar el artículo");
-    }
-}
-export async function deleteArticleByAlias(alias: string): Promise<productos.productos | null> {
-    try {
-        const article = await readArticleByAlias(alias);
-        if (!article) return null;
-        await Redis.deleteRedisArticles();
-        return await Prisma.productos.delete({
-            where: {
-                Alias: alias
+    readArticlesByMarca: async function (page: number, marca: string): Promise<SimpleArticle[] | undefined> {
+        try { 
+            const articles = await articlesRepository.DBreadAllArticlesByMarca(marca) as SimpleArticle[];
+            if(articles?.length === 0){
+                throw ErrorFactory.createError(404, `Marca ${marca} no encontrada`);
             }
-        })
-    } catch (error) {
-        throw new Error("Error al eliminar el artículo");
+            if (page) {
+                const limit: number = 5;
+                const offset: number = (page - 1) * limit;
+                const articles = await articlesRepository.DBreadAllArticlesByMarca(marca, limit, offset) as SimpleArticle[];
+                return articles;
+            } else {
+                return articles;
+            }
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    saveNewArticle: async function (articleData: SimpleArticle): Promise<productos.productos> {
+        try {
+            const aliasExist = await articlesRepository.DBreadArticleByAlias(articleData.Alias);
+            if(aliasExist) throw ErrorFactory.createError(409, "El alias ingresado ya existe en la base de datos");
+            return await articlesRepository.DBsaveArticle(articleData);
+        } catch (error) {
+            throw error;    
+        }
+    },
+
+    updateArticle: async function (articleData: SimpleArticle, alias: string): Promise<productos.productos> {
+        try {
+            const aliasExist = await articlesRepository.DBreadArticleByAlias(alias);
+            if(!aliasExist) throw ErrorFactory.createError(404, "El alias ingresado no existe en la base de datos");
+            return await articlesRepository.DBupdateArticleByAlias(articleData, alias);
+        } catch (error) {
+            throw error;    
+        }
+    },
+
+    deleteArticle: async function (alias: string): Promise<productos.productos> {
+        try {
+            const aliasExist = await articlesRepository.DBreadArticleByAlias(alias);
+            if(!aliasExist) throw ErrorFactory.createError(404, "El alias ingresado no existe en la base de datos");
+            return await articlesRepository.DBdeleteArticleByAlias(alias);
+        } catch (error) {
+            throw error;    
+        }
     }
 }
+
 

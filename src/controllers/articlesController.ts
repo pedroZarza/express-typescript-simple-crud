@@ -1,131 +1,102 @@
 import { Request, Response } from "express";
-import { SimpleArticle } from "../interfaces/article.interface";
-import { readAllArticles, readAllArticlesByPage, readArticleByAlias, saveArticle, updateArticleByAlias, deleteArticleByAlias, readAllArticlesByMarca } from "../services/articlesService";
+import { articlesService } from "../services/articlesService";
+import { HttpError } from "../utils/HttpErrorResponses";
 
+export const articlesController = {
 
-export async function getAllArticles(req: Request, res: Response): Promise<Response | undefined> {
-    try {
-        const page = Number(req.query.page);
-        if (page) {
-            const limit: number = 5;
-            const offset: number = (page - 1) * limit;
-            const articulosData = await readAllArticlesByPage(limit, offset);
-            const articulos = articulosData?.map(articulo => articulo = {
-                ...articulo,
-                endpoint: `${req.baseUrl}/${articulo.Alias}`
-            })
+    getAllArticles: async function (req: Request, res: Response): Promise<Response | undefined> {
+        try {
+            const page = Number(req.query.page)
+            const articulos = await articlesService.readArticles(page);
             return res.status(200).json({
                 status: "success",
-                page: page,
-                articulos: articulos?.length === 0 ? "No existe la página" : articulos
-            });
-        } else {
-            const articulosData = await readAllArticles();
-            const articulos = articulosData?.map(articulo => articulo = {
-                ...articulo,
-                endpoint: `${req.baseUrl}/${articulo.Alias}`
-            })
-            return res.status(200).json({
-                status: "success",
+                page: page ? page : "All",
                 articulos: articulos?.length === 0 ? "No se encontraron artículos en la DB" : articulos
             })
         }
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-}
-export async function getArticlesByAlias(req: Request, res: Response): Promise<Response | undefined> {
-    try {
-        const { alias } = req.params;
-        const article = await readArticleByAlias(alias);
-        if (article) {
+        catch (error: any) {
+            if (error instanceof HttpError) return res.status(error.statusCode).json({ status: "error", message: error.message });
+            return res.status(500).json({ status: "error", message: "Internal server error" });
+        }
+    },
+
+    getArticlesByAlias: async function (req: Request, res: Response): Promise<Response | undefined> {
+        try {
+            const { alias } = req.params;
+            const article = await articlesService.readArticleByAlias(alias);
             return res.status(200).json({
                 status: "success",
                 article: article
             })
+        } catch (error: any) {
+            if (error instanceof HttpError) return res.status(error.statusCode).json({ status: "error", message: error.message });
+            return res.status(500).json({ status: "error", message: "Internal server error" });
         }
-        return res.status(404).json({
-            status: "error",
-            message: "El alias ingresado no existe"
-        })
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-}
+    },
 
-export async function getAllArticlesByMarca(req: Request, res: Response): Promise<Response | undefined> {
-    try {
-        const { marca } = req.params;
-        const page = Number(req.query.page);
-        const limit: any = page ? 5: undefined;
-        const offset: any = page ? (page - 1) * limit : undefined;
-        const articulosData = await readAllArticlesByMarca(marca, limit, offset);
-        const articulos = articulosData?.map(articulo => articulo = {
-            ...articulo,
-            endpoint: `${req.baseUrl}/${articulo.Alias}`
-        })
-        return res.status(200).json({
-            status: "success",
-            marca: marca,
-            page: page || "All",
-            articulos: articulos?.length === 0 ? `No se encontraron artículos de la marca ${marca} en la DB` : articulos
-        });
-    }
-    catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-}
-export async function createOneArticle(req: Request, res: Response): Promise<Response | undefined> { //manejar mejor el error de alias ya existente (en service)
-    try {
-        const created = await saveArticle(req.body);
-        return res.status(201).json({
-            status: "success",
-            message: `El artículo con alias ${created.Alias} se creó con éxito`,
-            endpoint: `${req.baseUrl}/${created.Alias}`
-        })
+    getAllArticlesByMarca: async function (req: Request, res: Response): Promise<Response | undefined> {
+        try {
+            const page = Number(req.query.page);
+            const { marca } = req.params;
+            const articulos = await articlesService.readArticlesByMarca(page, marca);
+            return res.status(200).json({
+                status: "success",
+                marca: marca,
+                page: page || "All",
+                articulos: articulos?.length === 0 ? `Page out of range` : articulos
+            });
+        }
+        catch (error: any) {
+            if (error instanceof HttpError) return res.status(error.statusCode).json({ status: "error", message: error.message });
+            return res.status(500).json({ status: "error", message: "Internal server error" });
+        }
+    },
 
-    } catch (error: any) {
-        res.status(500).json({ error: error.message })
-    }
-}
-export async function updateOneArticle(req: Request, res: Response): Promise<Response | undefined> {
-    try {
-        const { alias } = req.params;
-        const updated = await updateArticleByAlias(req.body, alias);
-        if (!updated) {
-            return res.status(404).json({
-                status: "error",
-                message: "El alias ingresado no existe"
+    createOneArticle: async function (req: Request, res: Response): Promise<Response | undefined> { //manejar mejor el error de alias ya existente (en service)
+        try {
+            const created = await articlesService.saveNewArticle(req.body);
+            return res.status(201).json({
+                status: "success",
+                message: `El artículo con alias ${created.Alias} se creó con éxito`,
+                endpoint: `${req.baseUrl}/${created.Alias}`
             })
+        } catch (error: any) {
+            if (error instanceof HttpError) return res.status(error.statusCode).json({ status: "error", message: error.message });
+            return res.status(500).json({ status: "error", message: "Internal server error" });
         }
-        return res.status(201).json({
-            status: "success",
-            message: `El artículo con alias ${updated.Alias} se actualizó con éxito`,
-            endpoint: `${req.baseUrl}/${updated.Alias}`
-        })
+    },
 
-    } catch (error: any) {
-        res.status(500).json({ error: error.message })
-    }
-}
-export async function deleteOneArticle(req: Request, res: Response): Promise<Response | undefined> {
-    try {
-        const { alias } = req.params;
-        const deleted = await deleteArticleByAlias(alias);
-        if (!deleted) {
-            return res.status(404).json({
-                status: "error",
-                message: "El alias ingresado no existe"
+    updateOneArticle: async function (req: Request, res: Response): Promise<Response | undefined> {
+        try {
+            const { alias } = req.params;
+            const updated = await articlesService.updateArticle(req.body, alias);
+            return res.status(200).json({
+                status: "success",
+                message: `El artículo con alias ${updated.Alias} se actualizó con éxito`,
+                endpoint: `${req.baseUrl}/${updated.Alias}`
             })
+        } catch (error: any) {
+            if (error instanceof HttpError) return res.status(error.statusCode).json({ status: "error", message: error.message });
+            return res.status(500).json({ status: "error", message: "Internal server error" });
         }
-        return res.status(201).json({
-            status: "success",
-            message: `El artículo con alias ${deleted.Alias} se eliminó con éxito`,
-        })
-
-    } catch (error: any) {
-        res.status(500).json({ error: error.message })
+    },
+    
+    deleteOneArticle: async function (req: Request, res: Response): Promise<Response | undefined> {
+        try {
+            const { alias } = req.params;
+            const deleted = await articlesService.deleteArticle(alias);
+            return res.status(200).json({
+                status: "success",
+                message: `El artículo con alias ${deleted.Alias} se eliminó con éxito`,
+            })
+        } catch (error: any) {
+            if (error instanceof HttpError) return res.status(error.statusCode).json({ status: "error", message: error.message });
+            return res.status(500).json({ status: "error", message: "Internal server error" });
+        }
     }
 }
+
+
+
 
 
