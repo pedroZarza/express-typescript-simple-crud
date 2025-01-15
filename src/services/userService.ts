@@ -1,79 +1,76 @@
 import { SimpleUser } from "../interfaces/user.interface";
-import Prisma from "../database/config/prismaConnection";
 import { users } from "@prisma/client";
-import { hash, hashSync } from 'bcryptjs';
 
+import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from 'uuid';
+import { compareSync, hashSync } from 'bcryptjs';
+import { Redis } from "../database/config/redisConnection";
+import { userRepository } from "../repositories/user.repository";
+import { ErrorFactory } from "../utils/HttpErrorResponses";
 
-export async function readUserByEmail(email: string) {
-    try {
-        const user = await Prisma.users.findUnique({ where: { email: email, deletedAt: null } });
-        return user;
-    } catch (error) {
-        throw new Error("Error interno del servidor");
-    }
-}
+export const userService = {
 
-export async function saveUser(data: SimpleUser): Promise<users | undefined | null> {
-    try {
-        const user = await Prisma.users.findUnique({ where: { email: data.email}});
-        if (user) return null;
+    createUser: async function (user: SimpleUser): Promise<users> {
+        const userExist = await userRepository.DBreadUserByEmailAll(user.email);
+        if (userExist) throw ErrorFactory.createError(409, "El email ingresado ya está registrado");
         const newUser = {
-            email: data.email,
-            name: data.name,
-            role: data.role,
-            password: hashSync(data.password, 10)
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            password: hashSync(user.password, 10)
         }
-        return await Prisma.users.create({
-            data: newUser
-        })
-    } catch (error) {
-        throw new Error("Error al crear un usuario");
-    }
-}
-export async function updateUserInfo(data: SimpleUser, email: string): Promise<users | undefined | null> {
-    try { 
-        const user = await readUserByEmail(email);
-        if (!user) return null;
-        const updatedUser: Omit<SimpleUser, "email" | "password" | "confirmPassword"> = {
-            name: data.name,
-            role: data.role
+        return await userRepository.DBsaveUser(newUser);
+    },
+
+    loginProcess: async function (email: string, password: string): Promise<{ token: string, refreshToken: string }> {
+        const user = await userRepository.DBreadUserByEmail(email);
+        if (!user) throw ErrorFactory.createError(404, "El email ingresado no está registrado");
+        if (compareSync(password, user.password)) {
+            const secretKey = String(process.env.SECRETKEY_JWT);
+            return {
+                token: jwt.sign({ role: user.role, email: user.email, invalidTokenId: uuidv4() }, secretKey, { expiresIn: 60 * 15 }),
+                refreshToken: jwt.sign({ email: user.email, invalidTokenId: uuidv4() }, secretKey, { expiresIn: "30d" })
+            }
         }
-        return await Prisma.users.update({
-            data: updatedUser,
-            where: {
-                email: email,
-            }
-        })
-    } catch (error) {
-        throw new Error("Error al intentar actualizar la información del usuario");
-    }
-}
-export async function updateUserPassword(newPassword: string , email: string): Promise<users> {
-    try {
-        const updatedPassword = {
-            password: hashSync(newPassword, 10)
+        throw ErrorFactory.createError(401, "Credenciales incorrectas");
+    },
+
+    logoutProcess: async function (refreshToken: string | undefined): Promise<any> {
+        if (!refreshToken) {
+            throw ErrorFactory.createError(409, "No active refresh token");
         }
-        return await Prisma.users.update({
-            data: updatedPassword,
-            where: {
-                email: email
-            }
-        })
-    } catch (error) {
-        throw new Error("Error al intentar cambiar la contraseña del usuario");
+        const secretKey = String(process.env.SECRETKEY_JWT);
+        const refreshPayload: any = jwt.verify(refreshToken, secretKey);
+        return await Redis.writeInvalidToken(refreshToken, refreshPayload.invalidTokenId);
+    },
+
+    updateUserInfo: async function (user: SimpleUser, email: string): Promise<users> {
+        const userToUpdate = await userRepository.DBreadUserByEmail(email);
+        if (!userToUpdate) throw ErrorFactory.createError(404, "El usuario no existe");
+        const updatedUser = {
+            name: user.name,
+            role: user.role
+        }
+        return await userRepository.DBupdateUserInfo(updatedUser, email);
+    },
+
+    updateUserPassword: async function (previousPassword: string, newPassword: string, email: string): Promise<users> {
+        const user = await userRepository.DBreadUserByEmail(email) as SimpleUser;
+        const previousPassCheck = compareSync(previousPassword, user.password);
+        if (!previousPassCheck) throw ErrorFactory.createError(403, "La contraseña anterior es incorrecta");
+        const hashNewPassword = hashSync(newPassword, 10);
+        return await userRepository.DBupdateUserPassword(hashNewPassword, email);
+    },
+
+    deleteUser: async function (password: string, email: string, refreshToken: string): Promise<users> {
+        const user = await userRepository.DBreadUserByEmail(email) as SimpleUser;
+        if (!user) throw ErrorFactory.createError(404, "El email ingresado no está registrado");
+        const checkPass = compareSync(password, user.password);
+        if (!checkPass) throw ErrorFactory.createError(401, "Contraseña incorrecta");
+        const secretKey = String(process.env.SECRETKEY_JWT);
+        const tokenPayload: any = jwt.verify(refreshToken, secretKey);
+        await Redis.writeInvalidToken(refreshToken, tokenPayload.invalidTokenId);
+        return userRepository.DBdeleteUser(email);
     }
 }
-export async function deleteUser(email: string): Promise<users> {
-    try {
-        return await Prisma.users.update({
-            data: {
-                deletedAt: new Date()
-            },
-            where: {
-                email: email
-            }
-        })
-    } catch (error) {
-        throw new Error("Error al intentar eliminar la cuenta");
-    }
-}
+

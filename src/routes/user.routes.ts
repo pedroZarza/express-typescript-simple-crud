@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { createOneUser, login, logout, updateUserInfoByEmail, changePassword, deleteAccount} from "../controllers/userController";
+import { changePassword, createUser, login, logout, updateUserInfoByEmail, deleteAccount } from "../controllers/userController";
+import { refreshToken } from "../middlewares/refreshToken";
 import { schemaValidator } from "../middlewares/validatorMiddleware";
 import { userSchemaPost, userSchemaLogin, userSchemaPut, userChangePassSchema, userDeleteAccount} from "../validationSchemas/userValidationSchema";
-import { refreshToken } from "../middlewares/refreshToken";
 import { authentication } from "../middlewares/authMiddleware";
 import { revokeAccessToken } from "../middlewares/revokeAccessToken";
 
 const router = Router();
 
-router.post("/", schemaValidator(userSchemaPost), createOneUser);
+router.post("/", schemaValidator(userSchemaPost), createUser);
 
 router.post("/login", schemaValidator(userSchemaLogin), login);
 
@@ -20,6 +20,6 @@ router.put("/", authentication, schemaValidator(userSchemaPut), revokeAccessToke
 
 router.put("/change-password", authentication, schemaValidator(userChangePassSchema), changePassword);
 
-router.delete("/delete-account", authentication , schemaValidator(userDeleteAccount), revokeAccessToken, deleteAccount);
+router.delete("/delete-account", authentication , schemaValidator(userDeleteAccount), deleteAccount, revokeAccessToken);
 
 export default router;

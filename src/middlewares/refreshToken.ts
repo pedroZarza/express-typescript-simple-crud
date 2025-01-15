@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import jwt, { JsonWebTokenError, JwtPayload } from "jsonwebtoken";
-import { readUserByEmail } from "../services/userService";
+import { userRepository } from "../repositories/user.repository";
 import { Redis } from "../database/config/redisConnection";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -31,7 +31,7 @@ export async function refreshToken(req: Request, res: Response): Promise<Respons
                     message: "Expired refresh token"
                 })
             }
-            const user = await readUserByEmail(decoded?.email);
+            const user = await userRepository.DBreadUserByEmail(decoded?.email);
             const token = jwt.sign({ role: user?.role, email: user?.email, invalidTokenId: uuidv4() }, secretKey, { expiresIn: 60*15 });
             return res.status(200).json({
                 status: "success",
